@@ -1,25 +1,43 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, CreditCard, MessageSquare, Clock, ArrowUpRight, ArrowDownRight, RotateCcw, Infinity, Trash2 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { User } from '../types';
 
 const AdminView: React.FC = () => {
-  const [restaurants, setRestaurants] = useState([
-    { name: 'Restaurante El Olivo', email: 'hola@elolivo.com', status: 'ACTIVE', joinDate: '2024-03-10', revenue: '20€', isUnlimited: false },
-    { name: 'Pizzería Da Luigi', email: 'luigi@pizzeria.it', status: 'TRIAL', joinDate: '2024-03-14', revenue: '0€', isUnlimited: false },
-    { name: 'Sushi Zen', email: 'contacto@sushizen.es', status: 'ACTIVE', joinDate: '2024-03-05', revenue: '20€', isUnlimited: true },
-    { name: 'Burger Queen', email: 'admin@burgerqueen.com', status: 'UNPAID', joinDate: '2024-02-28', revenue: '20€', isUnlimited: false },
-  ]);
+  // Cargar restaurantes de localStorage o usar mock si está vacío
+  const [restaurants, setRestaurants] = useState<User[]>(() => {
+    const saved = localStorage.getItem('platform_users');
+    if (saved) return JSON.parse(saved);
+    
+    return [
+      { id: '1', name: 'Restaurante El Olivo', email: 'hola@elolivo.com', status: 'ACTIVE', createdAt: '2024-03-10', trialEndsAt: '2024-04-10', role: 'RESTAURANT', isUnlimited: false },
+      { id: '2', name: 'Pizzería Da Luigi', email: 'luigi@pizzeria.it', status: 'TRIAL', createdAt: '2024-03-14', trialEndsAt: '2024-04-14', role: 'RESTAURANT', isUnlimited: false },
+      { id: '3', name: 'Sushi Zen', email: 'contacto@sushizen.es', status: 'ACTIVE', createdAt: '2024-03-05', trialEndsAt: '2024-04-05', role: 'RESTAURANT', isUnlimited: true },
+    ];
+  });
 
   const stats = [
     { label: 'Ingresos Mensuales', value: '2,480 €', trend: '+14%', icon: CreditCard, color: 'bg-emerald-100 text-emerald-600' },
-    { label: 'Restaurantes Activos', value: '124', trend: '+5', icon: Users, color: 'bg-blue-100 text-blue-600' },
+    { label: 'Restaurantes Activos', value: restaurants.length.toString(), trend: '+5', icon: Users, color: 'bg-blue-100 text-blue-600' },
     { label: 'Mensajes Procesados', value: '45.2k', trend: '+22%', icon: MessageSquare, color: 'bg-purple-100 text-purple-600' },
-    { label: 'Restaurantes en Prueba', value: '18', trend: '-2', icon: Clock, color: 'bg-amber-100 text-amber-600' },
+    { label: 'Restaurantes en Prueba', value: restaurants.filter(r => r.status === 'TRIAL').length.toString(), trend: '-2', icon: Clock, color: 'bg-amber-100 text-amber-600' },
   ];
 
+  // Sincronizar cambios en localStorage cada vez que el estado cambie
+  useEffect(() => {
+    localStorage.setItem('platform_users', JSON.stringify(restaurants));
+  }, [restaurants]);
+
   const handleRenewMonth = (index: number) => {
-    alert(`Se ha renovado un mes adicional para ${restaurants[index].name}`);
+    const newRest = [...restaurants];
+    const currentEnd = new Date(newRest[index].trialEndsAt);
+    
+    // Añadir 30 días a la fecha actual de finalización
+    currentEnd.setDate(currentEnd.getDate() + 30);
+    newRest[index].trialEndsAt = currentEnd.toISOString();
+    
+    setRestaurants(newRest);
+    alert(`Se han añadido 30 días adicionales a ${restaurants[index].name}. Nueva fecha: ${currentEnd.toLocaleDateString()}`);
   };
 
   const handleToggleUnlimited = (index: number) => {
@@ -29,10 +47,16 @@ const AdminView: React.FC = () => {
     alert(`${restaurants[index].name} ahora tiene acceso ${newRest[index].isUnlimited ? 'ILIMITADO' : 'ESTÁNDAR'}`);
   };
 
+  const handleDelete = (index: number) => {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar a ${restaurants[index].name}?`)) {
+      setRestaurants(restaurants.filter((_, i) => i !== index));
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Panel de Administración</h2>
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Panel de Administración</h2>
         <p className="text-slate-500">Gestión global de la plataforma RespondeYaRest.</p>
       </div>
 
@@ -53,74 +77,77 @@ const AdminView: React.FC = () => {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
         <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
           <div>
             <h3 className="font-bold text-slate-900">Gestión de Restaurantes</h3>
             <p className="text-xs text-slate-500">Controla periodos de prueba y accesos especiales.</p>
           </div>
-          <div className="flex gap-2">
-            <button className="text-xs font-bold bg-white border px-3 py-2 rounded-lg hover:bg-slate-50">Exportar CSV</button>
-            <button className="text-xs font-bold bg-emerald-600 text-white px-3 py-2 rounded-lg hover:bg-emerald-700">Añadir Nuevo</button>
-          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+            <thead className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
               <tr>
                 <th className="px-6 py-4">Restaurante</th>
                 <th className="px-6 py-4">Estado</th>
-                <th className="px-6 py-4">Suscripción</th>
-                <th className="px-6 py-4">Acciones de Gestión</th>
+                <th className="px-6 py-4">Expira / Trial</th>
+                <th className="px-6 py-4">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y text-sm">
               {restaurants.map((user, i) => (
                 <tr key={i} className={`hover:bg-slate-50/80 transition-colors ${user.isUnlimited ? 'bg-emerald-50/30' : ''}`}>
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-slate-900">{user.name}</div>
-                    <div className="text-xs text-slate-400">{user.email}</div>
+                    <div className="font-bold text-slate-900">{user.name}</div>
+                    <div className="text-xs text-slate-400 font-medium">{user.email}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
-                      <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold w-fit ${
+                      <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold w-fit uppercase tracking-wider ${
                         user.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' :
                         user.status === 'TRIAL' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'
                       }`}>
                         {user.status}
                       </span>
                       {user.isUnlimited && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-700">
-                          <Infinity size={10} /> ILIMITADO
+                        <span className="flex items-center gap-1 text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+                          <Infinity size={10} /> Ilimitado
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-xs font-bold text-slate-900">{user.revenue} / mes</div>
-                    <div className="text-[10px] text-slate-400">Desde: {user.joinDate}</div>
+                    <div className="text-xs font-bold text-slate-900">
+                      {new Date(user.trialEndsAt).toLocaleDateString()}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                      {Math.ceil((new Date(user.trialEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} días restantes
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => handleRenewMonth(i)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
                         title="Añadir 30 días de prueba"
                       >
                         <RotateCcw size={14} /> +30 Días
                       </button>
                       <button 
                         onClick={() => handleToggleUnlimited(i)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-[11px] font-bold transition-all shadow-sm ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-xl text-[11px] font-bold transition-all shadow-sm ${
                           user.isUnlimited 
                             ? 'bg-slate-900 border-slate-900 text-white hover:bg-slate-800' 
                             : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-600'
                         }`}
                         title="Hacer acceso ilimitado"
                       >
-                        <Infinity size={14} /> {user.isUnlimited ? 'Quitar Ilimitado' : 'Hacer Ilimitado'}
+                        <Infinity size={14} /> {user.isUnlimited ? 'Estándar' : 'Ilimitado'}
                       </button>
-                      <button className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                      <button 
+                        onClick={() => handleDelete(i)}
+                        className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </div>

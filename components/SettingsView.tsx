@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { MOCK_RESTAURANT_INFO, COMMON_QUESTIONS } from '../constants';
-import { Save, Plus, Trash2, Clock, MapPin, Phone, BookOpen, AlertCircle, Upload, FileText } from 'lucide-react';
+import { Save, Plus, Trash2, Clock, MapPin, BookOpen, AlertCircle, Upload, FileText } from 'lucide-react';
 
 const SettingsView: React.FC = () => {
   const [info, setInfo] = useState(MOCK_RESTAURANT_INFO);
@@ -41,14 +41,12 @@ const SettingsView: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-32 md:pb-8 w-full overflow-x-hidden">
-      {/* Header adaptable */}
       <div className="flex flex-col gap-4 px-1">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Gestión del Negocio</h2>
-          <p className="text-slate-500 text-sm font-medium">Configura lo que tu IA sabe sobre ti.</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Entrenamiento de IA</h2>
+          <p className="text-slate-500 text-sm font-medium">Define los datos que usará la IA para responder a tus clientes.</p>
         </div>
         
-        {/* Selector de pestañas móvil mejorado con scroll lateral y padding */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:-mx-0 sm:px-0">
           {tabs.map((tab) => (
             <button
@@ -84,7 +82,7 @@ const SettingsView: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Horarios
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Horarios de atención
                 </label>
                 <textarea 
                   rows={3}
@@ -106,7 +104,7 @@ const SettingsView: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Teléfono WhatsApp
+                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div> Teléfono de Negocio
                 </label>
                 <input 
                   type="text" 
@@ -122,8 +120,8 @@ const SettingsView: React.FC = () => {
         {activeSubTab === 'menu' && (
           <div className="space-y-8 md:space-y-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <PdfUpload label="Carta del Restaurante" fileName={info.menuPdf} onUpload={() => alert("Cargando...")} />
-              <PdfUpload label="Ficha de Alérgenos" fileName={info.allergensPdf} onUpload={() => alert("Cargando...")} />
+              <PdfUpload label="Carta del Restaurante" fileName={info.menuPdf} onUpload={() => alert("Simulando carga de PDF...")} />
+              <PdfUpload label="Ficha de Alérgenos" fileName={info.allergensPdf} onUpload={() => alert("Simulando carga de PDF...")} />
             </div>
             
             <div className="pt-6 border-t border-slate-50 space-y-3">
@@ -144,9 +142,9 @@ const SettingsView: React.FC = () => {
             <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl flex gap-3 sm:gap-4 text-white">
               <AlertCircle className="text-emerald-400 flex-shrink-0" size={20} />
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Consejo Pro</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Entrenamiento de IA</p>
                 <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-medium">
-                  Cuanto más detalle des aquí, menos veces tendrás que intervenir tú en los chats.
+                  Define respuestas a preguntas frecuentes para que la IA sea más precisa.
                 </p>
               </div>
             </div>
@@ -207,13 +205,12 @@ const SettingsView: React.FC = () => {
         )}
       </div>
 
-      {/* Botón Guardar Flotante en Móvil - Ajustado para evitar solapamientos */}
       <div className="fixed bottom-20 left-0 right-0 p-4 md:static md:bottom-auto md:p-0 z-40 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent md:bg-none">
         <button 
           onClick={handleSave}
           className="w-full flex items-center justify-center gap-3 bg-emerald-600 text-white py-4 rounded-2xl sm:rounded-[2rem] font-black text-base sm:text-lg shadow-2xl shadow-emerald-600/30 hover:bg-emerald-700 active:scale-95 transition-all"
         >
-          <Save size={20} className="sm:w-6 sm:h-6" /> Guardar Configuración
+          <Save size={20} className="sm:w-6 sm:h-6" /> Guardar Cambios
         </button>
       </div>
     </div>

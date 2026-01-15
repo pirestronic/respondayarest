@@ -1,20 +1,29 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Conversation, Message } from '../types';
-import { Send, Phone, MoreVertical, Search, CheckCheck, Zap, MessageSquare, ChevronLeft } from 'lucide-react';
+import { Send, Phone, MoreVertical, Search, CheckCheck, Zap, MessageSquare, ChevronLeft, QrCode, Loader2, Smartphone, ShieldCheck } from 'lucide-react';
 import { geminiService } from '../services/geminiService';
 import { MOCK_RESTAURANT_INFO } from '../constants';
 
 interface ChatWindowProps {
   conversations: Conversation[];
+  isConnected: boolean;
+  onConnect: () => void;
+  onDisconnect: () => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversations }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ 
+  conversations: initialConversations, 
+  isConnected, 
+  onConnect,
+  onDisconnect 
+}) => {
   const [conversations, setConversations] = useState(initialConversations);
   const [selectedId, setSelectedId] = useState<string | null>(initialConversations[0]?.id || null);
   const [showDetailOnMobile, setShowDetailOnMobile] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isPairing, setIsPairing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const selectedConversation = conversations.find(c => c.id === selectedId);
@@ -23,7 +32,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversat
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [selectedConversation?.messages, isTyping, showDetailOnMobile]);
+  }, [selectedConversation?.messages, isTyping, showDetailOnMobile, isConnected]);
+
+  const handleStartPairing = () => {
+    setIsPairing(true);
+    setTimeout(() => {
+      setIsPairing(false);
+      onConnect();
+    }, 4000);
+  };
 
   const handleSelectChat = (id: string) => {
     setSelectedId(id);
@@ -82,16 +99,86 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversat
     }, 1500);
   };
 
+  if (!isConnected) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-6 bg-white rounded-3xl border border-slate-100 shadow-sm text-center">
+        <div className="max-w-md w-full animate-in fade-in zoom-in duration-500">
+          {!isPairing ? (
+            <>
+              <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-emerald-100/50">
+                <QrCode size={48} />
+              </div>
+              <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Vincular WhatsApp</h2>
+              <p className="text-slate-500 mb-8 font-medium leading-relaxed">
+                Para que la IA pueda responder tus mensajes, primero debes conectar tu cuenta de WhatsApp Business.
+              </p>
+              
+              <div className="space-y-3 mb-8">
+                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl text-left">
+                  <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm font-black">1</div>
+                  <p className="text-xs font-bold text-slate-700">Abre WhatsApp en tu teléfono</p>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl text-left">
+                  <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm font-black">2</div>
+                  <p className="text-xs font-bold text-slate-700">Toca Dispositivos vinculados {'>'} Vincular</p>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl text-left">
+                  <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm font-black">3</div>
+                  <p className="text-xs font-bold text-slate-700">Apunta con la cámara al código QR</p>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleStartPairing}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl flex items-center justify-center gap-3"
+              >
+                Generar Código QR <Smartphone size={18} />
+              </button>
+            </>
+          ) : (
+            <div className="space-y-6">
+              <div className="relative p-6 bg-white border-2 border-slate-100 rounded-[3rem] shadow-2xl flex items-center justify-center overflow-hidden aspect-square max-w-[280px] mx-auto">
+                <img 
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=RespondeYaRest_Pairing_Flow" 
+                  alt="QR Code" 
+                  className="opacity-10 blur-[2px]" 
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white/60">
+                  <Loader2 size={48} className="text-emerald-500 animate-spin" />
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Sincronizando...</p>
+                </div>
+              </div>
+              <p className="text-sm font-bold text-slate-800 animate-pulse">Generando conexión segura con WhatsApp...</p>
+            </div>
+          )}
+          
+          <div className="mt-12 flex items-center justify-center gap-4 text-[10px] text-slate-300 font-black uppercase tracking-widest">
+            <span className="flex items-center gap-2"><ShieldCheck size={12} /> Cifrado de extremo a extremo</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
       {/* Sidebar - Chat List */}
       <div className={`w-full md:w-1/3 lg:w-80 border-r flex flex-col ${showDetailOnMobile ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b bg-white z-10">
+        <div className="p-4 border-b bg-white z-10 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-black">Conversaciones</h2>
+            <button 
+              onClick={onDisconnect}
+              className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline"
+            >
+              Desconectar
+            </button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
             <input 
               type="text" 
-              placeholder="Buscar conversación..." 
+              placeholder="Buscar por nombre..." 
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm border-none focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
@@ -125,9 +212,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversat
           <div className="p-4">
             <button 
               onClick={simulateIncomingMessage}
-              className="w-full py-3 text-xs font-bold text-emerald-600 border border-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors"
+              className="w-full py-3 text-xs font-bold text-emerald-600 border border-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
             >
-              Simular Mensaje Cliente
+              <MessageSquare size={14} /> Simular Mensaje Cliente
             </button>
           </div>
         </div>
@@ -151,7 +238,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversat
                 </div>
                 <div className="overflow-hidden">
                   <h3 className="font-bold text-slate-900 leading-tight truncate">{selectedConversation.customerName}</h3>
-                  <p className="text-[11px] text-emerald-500 font-bold">{selectedConversation.customerPhone}</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <p className="text-[11px] text-emerald-500 font-bold">{selectedConversation.customerPhone}</p>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-slate-400">
@@ -204,7 +294,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversat
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Escribe un mensaje..."
+                    placeholder="Respuesta manual de humano..."
                     className="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2"
                   />
                 </div>
@@ -226,7 +316,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversations: initialConversat
               <MessageSquare size={32} className="text-slate-200" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 mb-2">Selecciona un chat</h3>
-            <p className="max-w-xs text-sm">Escoge una conversación de la izquierda para empezar a gestionar los mensajes de tus clientes.</p>
+            <p className="max-w-xs text-sm">WhatsApp conectado correctamente. La IA está gestionando los mensajes entrantes en tiempo real.</p>
           </div>
         )}
       </div>
