@@ -1,0 +1,5 @@
+{
+  "name": "RespondeYaRest - Automatización de WhatsApp para Restaurantes",
+  "description": "Una plataforma SaaS integral para que los restaurantes automaticen la atención al cliente de WhatsApp con respuestas de IA controladas basadas estrictamente en los datos del restaurante.",
+  "requestFramePermissions": []
+}
