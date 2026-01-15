@@ -40,7 +40,7 @@ const SettingsView: React.FC = () => {
   ] as const;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-28 md:pb-8 w-full overflow-x-hidden">
+    <div className="max-w-4xl mx-auto space-y-6 pb-32 md:pb-8 w-full overflow-x-hidden">
       {/* Header adaptable */}
       <div className="flex flex-col gap-4 px-1">
         <div>
@@ -56,7 +56,7 @@ const SettingsView: React.FC = () => {
               onClick={() => setActiveSubTab(tab.id)}
               className={`flex items-center gap-2 px-5 py-3 rounded-2xl whitespace-nowrap text-sm font-bold transition-all shadow-sm flex-shrink-0 ${
                 activeSubTab === tab.id 
-                  ? 'bg-slate-900 text-white scale-100' 
+                  ? 'bg-slate-900 text-white' 
                   : 'bg-white text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -141,11 +141,11 @@ const SettingsView: React.FC = () => {
 
         {activeSubTab === 'faq' && (
           <div className="space-y-8">
-            <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl flex gap-4 text-white">
-              <AlertCircle className="text-emerald-400 flex-shrink-0" size={24} />
+            <div className="p-5 sm:p-6 bg-slate-900 rounded-3xl flex gap-3 sm:gap-4 text-white">
+              <AlertCircle className="text-emerald-400 flex-shrink-0" size={20} />
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-1">Consejo Pro</p>
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-medium">
                   Cuanto más detalle des aquí, menos veces tendrás que intervenir tú en los chats.
                 </p>
               </div>
@@ -153,7 +153,7 @@ const SettingsView: React.FC = () => {
 
             <div className="space-y-4">
               {info.faqs.map((faq, idx) => (
-                <div key={idx} className="p-5 sm:p-6 bg-slate-50 rounded-3xl relative border border-slate-100 group transition-all hover:bg-white hover:shadow-lg w-full">
+                <div key={idx} className="p-4 sm:p-6 bg-slate-50 rounded-3xl relative border border-slate-100 group transition-all hover:bg-white hover:shadow-lg w-full">
                   <button 
                     onClick={() => setInfo({...info, faqs: info.faqs.filter((_, i) => i !== idx)})}
                     className="absolute top-5 right-5 p-2 text-slate-300 hover:text-red-500 transition-colors"
@@ -172,7 +172,7 @@ const SettingsView: React.FC = () => {
                           newFaqs[idx].question = e.target.value;
                           setInfo({...info, faqs: newFaqs});
                         }}
-                        className="w-full bg-white px-5 py-3 rounded-2xl border-none text-sm font-bold shadow-sm focus:ring-2 focus:ring-emerald-500/20" 
+                        className="w-full bg-white px-4 sm:px-5 py-3 rounded-2xl border-none text-sm font-bold shadow-sm focus:ring-2 focus:ring-emerald-500/20" 
                       />
                       <datalist id={`common-questions-${idx}`}>
                         {COMMON_QUESTIONS.map(q => <option key={q} value={q} />)}
@@ -188,7 +188,7 @@ const SettingsView: React.FC = () => {
                           newFaqs[idx].answer = e.target.value;
                           setInfo({...info, faqs: newFaqs});
                         }}
-                        className="w-full bg-white px-5 py-3 rounded-2xl border-none text-sm font-medium shadow-sm focus:ring-2 focus:ring-emerald-500/20" 
+                        className="w-full bg-white px-4 sm:px-5 py-3 rounded-2xl border-none text-sm font-medium shadow-sm focus:ring-2 focus:ring-emerald-500/20" 
                       />
                     </div>
                   </div>
@@ -208,10 +208,10 @@ const SettingsView: React.FC = () => {
       </div>
 
       {/* Botón Guardar Flotante en Móvil - Ajustado para evitar solapamientos */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 md:static md:bottom-auto md:p-0 z-40 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent md:bg-none">
+      <div className="fixed bottom-20 left-0 right-0 p-4 md:static md:bottom-auto md:p-0 z-40 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent md:bg-none">
         <button 
           onClick={handleSave}
-          className="w-full flex items-center justify-center gap-3 bg-emerald-600 text-white py-4 sm:py-5 rounded-2xl sm:rounded-[2rem] font-black text-base sm:text-lg shadow-2xl shadow-emerald-600/30 hover:bg-emerald-700 active:scale-95 transition-all"
+          className="w-full flex items-center justify-center gap-3 bg-emerald-600 text-white py-4 rounded-2xl sm:rounded-[2rem] font-black text-base sm:text-lg shadow-2xl shadow-emerald-600/30 hover:bg-emerald-700 active:scale-95 transition-all"
         >
           <Save size={20} className="sm:w-6 sm:h-6" /> Guardar Configuración
         </button>

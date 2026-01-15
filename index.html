@@ -23,6 +23,15 @@
         }
         /* Eliminar scroll lateral en móviles */
         html, body { overflow-x: hidden; position: relative; }
+        
+        /* Ocultar barra de scroll pero permitir scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 <script type="importmap">
 {
@@ -39,14 +48,5 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('SW registrado'))
-            .catch(err => console.log('SW falló', err));
-        });
-      }
-    </script>
 </body>
 </html>
