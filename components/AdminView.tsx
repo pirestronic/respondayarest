@@ -4,7 +4,6 @@ import { Users, CreditCard, MessageSquare, Clock, ArrowUpRight, ArrowDownRight, 
 import { User } from '../types';
 
 const AdminView: React.FC = () => {
-  // Cargar restaurantes de localStorage o usar mock si está vacío
   const [restaurants, setRestaurants] = useState<User[]>(() => {
     const saved = localStorage.getItem('platform_users');
     if (saved) return JSON.parse(saved);
@@ -23,33 +22,43 @@ const AdminView: React.FC = () => {
     { label: 'Restaurantes en Prueba', value: restaurants.filter(r => r.status === 'TRIAL').length.toString(), trend: '-2', icon: Clock, color: 'bg-amber-100 text-amber-600' },
   ];
 
-  // Sincronizar cambios en localStorage cada vez que el estado cambie
   useEffect(() => {
     localStorage.setItem('platform_users', JSON.stringify(restaurants));
   }, [restaurants]);
 
   const handleRenewMonth = (index: number) => {
-    const newRest = [...restaurants];
-    const currentEnd = new Date(newRest[index].trialEndsAt);
-    
-    // Añadir 30 días a la fecha actual de finalización
-    currentEnd.setDate(currentEnd.getDate() + 30);
-    newRest[index].trialEndsAt = currentEnd.toISOString();
-    
-    setRestaurants(newRest);
-    alert(`Se han añadido 30 días adicionales a ${restaurants[index].name}. Nueva fecha: ${currentEnd.toLocaleDateString()}`);
+    setRestaurants(prevRestaurants => {
+      const newRestList = [...prevRestaurants];
+      const targetRest = newRestList[index];
+      
+      const currentEnd = new Date(targetRest.trialEndsAt);
+      currentEnd.setDate(currentEnd.getDate() + 30);
+      
+      // Actualización inmutable del objeto para forzar re-render
+      newRestList[index] = {
+        ...targetRest,
+        trialEndsAt: currentEnd.toISOString()
+      };
+      
+      alert(`Se han añadido 30 días adicionales a ${targetRest.name}. Nueva fecha: ${currentEnd.toLocaleDateString()}`);
+      return newRestList;
+    });
   };
 
   const handleToggleUnlimited = (index: number) => {
-    const newRest = [...restaurants];
-    newRest[index].isUnlimited = !newRest[index].isUnlimited;
-    setRestaurants(newRest);
-    alert(`${restaurants[index].name} ahora tiene acceso ${newRest[index].isUnlimited ? 'ILIMITADO' : 'ESTÁNDAR'}`);
+    setRestaurants(prevRestaurants => {
+      const newRestList = [...prevRestaurants];
+      newRestList[index] = {
+        ...newRestList[index],
+        isUnlimited: !newRestList[index].isUnlimited
+      };
+      return newRestList;
+    });
   };
 
   const handleDelete = (index: number) => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar a ${restaurants[index].name}?`)) {
-      setRestaurants(restaurants.filter((_, i) => i !== index));
+      setRestaurants(prev => prev.filter((_, i) => i !== index));
     }
   };
 
@@ -71,7 +80,7 @@ const AdminView: React.FC = () => {
                 {stat.trend.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />} {stat.trend}
               </span>
             </div>
-            <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{stat.label}</h3>
+            <h3 className="text-slate-500 text-sm font-semibold uppercase tracking-wider">{stat.label}</h3>
             <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
           </div>
         ))}
@@ -96,7 +105,7 @@ const AdminView: React.FC = () => {
             </thead>
             <tbody className="divide-y text-sm">
               {restaurants.map((user, i) => (
-                <tr key={i} className={`hover:bg-slate-50/80 transition-colors ${user.isUnlimited ? 'bg-emerald-50/30' : ''}`}>
+                <tr key={user.id} className={`hover:bg-slate-50/80 transition-colors ${user.isUnlimited ? 'bg-emerald-50/30' : ''}`}>
                   <td className="px-6 py-4">
                     <div className="font-bold text-slate-900">{user.name}</div>
                     <div className="text-xs text-slate-400 font-medium">{user.email}</div>

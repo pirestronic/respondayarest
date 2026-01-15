@@ -6,11 +6,19 @@ export class GeminiService {
   private ai: GoogleGenAI;
 
   constructor() {
-    // Correctly initializing with named parameter and process.env.API_KEY
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // Asegurar que pasamos un string aunque process.env.API_KEY no esté definido momentáneamente
+    const apiKey = process.env.API_KEY || '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   async generateResponse(userMessage: string, restaurant: RestaurantInfo): Promise<{ found: boolean; response: string }> {
+    if (!process.env.API_KEY) {
+      return {
+        found: false,
+        response: `Hola 😊 Gracias por contactar con ${restaurant.name}. Un compañero te responderá lo antes posible.`
+      };
+    }
+
     const prompt = `
       You are an AI customer support agent for the restaurant "${restaurant.name}". 
       Your goal is to answer customer questions strictly using the information provided below.
@@ -53,7 +61,6 @@ export class GeminiService {
         }
       });
 
-      // result.text is a property getter, used correctly without parentheses
       const data = JSON.parse(result.text || '{"found": false, "response": ""}');
       
       if (!data.found) {
